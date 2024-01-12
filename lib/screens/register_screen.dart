@@ -31,6 +31,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   final TextEditingController _bioController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   Uint8List? _image;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -48,6 +49,29 @@ class _RegisterScreenState extends State<RegisterScreen>
     setState(() {
       _image = im;
     });
+  }
+
+  void signUpUser() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    String res = await AuthMethods().signUpUser(
+      email: _emailController.text,
+      username: _usernameController.text,
+      password: _passwordController.text,
+      phone: _phoneController.text,
+      bio: _bioController.text,
+      file: _image!,
+    );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (res != 'success') {
+      showSnackBar(res, context);
+    }
   }
 
   @override
@@ -151,16 +175,7 @@ class _RegisterScreenState extends State<RegisterScreen>
 
               // Button
               InkWell(
-                onTap: () async {
-                  String res = await AuthMethods().signUpUser(
-                    email: _emailController.text,
-                    username: _usernameController.text,
-                    password: _passwordController.text,
-                    phone: _phoneController.text,
-                    bio: _bioController.text,
-                  );
-                  print(res);
-                },
+                onTap: signUpUser,
                 child: Container(
                   width: double.infinity,
                   alignment: Alignment.center,
@@ -173,7 +188,9 @@ class _RegisterScreenState extends State<RegisterScreen>
                     ),
                     color: blueColor,
                   ),
-                  child: const Text('Register'),
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : const Text('Register'),
                 ),
               ),
 
